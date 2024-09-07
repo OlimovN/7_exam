@@ -9,7 +9,7 @@ const App = () => (
   <ThemeProvider>
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/country/:code" element={<CountryDetail />} />
+      <Route  path='/card/:slug' element={<CountryDetail />} />
     </Routes>
   </ThemeProvider>
 );

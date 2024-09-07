@@ -1,218 +1,175 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "../api/axios.js";
-import Loader from "../components/Loader.jsx";
-import { useTheme } from "../context/ThemeContext.jsx";
-import ThemeToggle from "../context/ThemeToggle.jsx";
+import { useNavigate, useParams } from "react-router-dom";
+import http from "../utils/axios";
+import { FaSun, FaMoon, FaArrowLeft } from "react-icons/fa";
 
 const CountryDetail = () => {
-  const { code } = useParams();
-  const navigate = useNavigate();
-  const [country, setCountry] = useState(null);
+  const { slug } = useParams();
+  const [product, setProduct] = useState(null);
   const [borderCountries, setBorderCountries] = useState([]);
-  const [selectedBorder, setSelectedBorder] = useState(null);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const { isDarkMode } = useTheme();
+  const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCountry = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(`/alpha/${code}`);
-        if (response.status === 200 && response.data) {
-          setCountry(response.data);
+        const response = await http.get(`countries/${slug}`);
+        setProduct(response.data);
 
-          if (response.data.borders && response.data.borders.length > 0) {
-            fetchBorders(response.data.borders);
-          }
-        } else {
-          setError("No country data found");
+        if (response.data.borders && response.data.borders.length > 0) {
+          const borderResponses = await Promise.all(
+            response.data.borders.map((border) =>
+              http.get(`countries/${border}`)
+            )
+          );
+          setBorderCountries(borderResponses.map((res) => res.data));
         }
       } catch (error) {
-        console.error("Error fetching country details:", error);
-        setError("Failed to fetch country details. Please try again later.");
+        console.error(error);
       }
     };
 
-    const fetchBorders = async (borderCodes) => {
-      try {
-        const borderData = await Promise.all(
-          borderCodes.map((code) => axios.get(`/alpha/${code}`))
-        );
-        setBorderCountries(borderData.map((res) => res.data));
-      } catch (error) {
-        console.error("Error fetching border countries:", error);
-        setError("Failed to fetch border countries. Please try again later.");
-      }
-    };
+    fetchData();
+  }, [slug]);
 
-    fetchCountry();
-  }, [code]);
+  const handleBack = () => navigate("/");
 
-  const handleBorderClick = (borderCountry) => {
-    setSelectedBorder(borderCountry);
-  };
-
-  const filteredBorders = borderCountries.filter((border) =>
-    border.name.common.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (error) {
-    return (
-      <div
-        className={`p-6 max-w-4xl mx-auto mt-8 rounded-lg shadow-md ${
-          isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-        }`}
-      >
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
-
-  if (!country) return <Loader />;
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   return (
     <div
       className={`min-h-screen ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
+        darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"
       }`}
     >
-      {/* Responsive Header */}
-      <header
-        className={`flex flex-col md:flex-row justify-between items-center gap-4 p-4 rounded-md ${
-          isDarkMode ? "bg-gray-800" : "bg-white"
-        } shadow-lg`}
-      >
-        <h1
-          className={`text-2xl font-bold ${
-            isDarkMode ? "text-white" : "text-black"
-          }`}
-        >
-          Where in the world?
-        </h1>
-        <div className="flex items-center gap-2 mt-4 md:mt-0">
-          <ThemeToggle />
-          <span className={`${isDarkMode ? "text-white" : "text-black"}`}>
-            Mode
-          </span>
-        </div>
-      </header>
-
       <div
-        className={`p-6 max-w-4xl mx-auto mt-8 rounded-lg shadow-md ${
-          isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
-        }`}
+        className={`flex flex-col gap-6 p-4 ${
+          darkMode ? "bg-gray-900" : "bg-gray-100"
+        } shadow-md rounded-lg mb-6 transition-all duration-300`}
       >
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex-1">
-            <img
-              src={country.flags?.svg || "default-flag.png"}
-              alt={country.name?.common || "Country Flag"}
-              className="w-full h-64 object-cover rounded-lg shadow-lg"
-            />
+        <div
+          className={`flex flex-col md:flex-row justify-between items-center gap-4 p-4 rounded-md ${
+            darkMode ? "bg-gray-800" : "bg-white"
+          } shadow-lg transition-all duration-300`}
+        >
+          <h1
+            className={`text-2xl font-bold ${
+              darkMode ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Where in the world?
+          </h1>
+          <div className="flex items-center gap-2 mt-4 md:mt-0">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-full transition-colors duration-300 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-yellow-400 hover:bg-gray-300 dark:hover:bg-gray-600"
+            >
+              {darkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+            </button>
+            <span
+              className={`text-gray-900 ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              Mode
+            </span>
           </div>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-4">
-              {country.name?.common || "Country Name"}
-            </h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <p>
-                <strong>Region:</strong> {country.region || "N/A"}
-              </p>
-              <p>
-                <strong>Subregion:</strong> {country.subregion || "N/A"}
-              </p>
-              <p>
-                <strong>Population:</strong>{" "}
-                {country.population?.toLocaleString() || "N/A"}
-              </p>
-              <p>
-                <strong>Capital:</strong> {country.capital?.join(", ") || "N/A"}
-              </p>
-              <p>
-                <strong>Languages:</strong>{" "}
-                {Object.values(country.languages || {}).join(", ") || "N/A"}
-              </p>
-              <p>
-                <strong>Currencies:</strong>{" "}
-                {Object.values(country.currencies || {})
-                  .map((c) => c.name)
-                  .join(", ") || "N/A"}
-              </p>
-              <p>
-                <strong>Timezones:</strong>{" "}
-                {country.timezones?.join(", ") || "N/A"}
-              </p>
-              <p>
-                <strong>Area:</strong> {country.area?.toLocaleString() || "N/A"}{" "}
-                km²
-              </p>
-              <div className="mb-4">
-                <strong>Borders:</strong>{" "}
-                <input
-                  type="text"
-                  placeholder="Search borders..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg"
+        </div>
+        <button
+          onClick={handleBack}
+          className="mb-6 px-2 py-1 bg-blue-500 text-white rounded-md flex items-center gap-1 text-xs hover:bg-blue-600 transition-all duration-100"
+        >
+          <FaArrowLeft size={14} />
+          <span className="text-sm">Back</span>
+        </button>
+
+        {product ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="flex justify-center items-center">
+              {product.flags && product.flags.png ? (
+                <img
+                  src={product.flags.png}
+                  alt={product.name?.common}
+                  className="w-full md:w-96 h-auto object-cover rounded-lg shadow-lg"
                 />
-                <ul className="mt-2">
-                  {filteredBorders.length ? (
-                    filteredBorders.map((border) => (
-                      <li
-                        key={border.cca3}
-                        className="cursor-pointer hover:underline"
-                        onClick={() => handleBorderClick(border)}
-                      >
-                        {border.name.common}
-                      </li>
-                    ))
+              ) : (
+                <p className="text-gray-500">Image not available</p>
+              )}
+            </div>
+            <div className="flex flex-col justify-center space-y-6">
+              <h1 className="text-3xl font-bold mb-4">
+                {product.name?.common || "Country Name"}
+              </h1>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p>
+                    <strong>Native Name:</strong>{" "}
+                    {product.name?.nativeName || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Population:</strong> {product.population || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Region:</strong> {product.region || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Sub Region:</strong> {product.subregion || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Capital:</strong> {product.capital || "N/A"}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p>
+                    <strong>Top Level Domain:</strong>{" "}
+                    {product.topLevelDomain?.[0] || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Currencies:</strong>{" "}
+                    {product.currencies
+                      ? Object.values(product.currencies)
+                          .map((c) => c.name)
+                          .join(", ")
+                      : "N/A"}
+                  </p>
+                  <p>
+                    <strong>Languages:</strong>{" "}
+                    {product.languages
+                      ? Object.values(product.languages).join(", ")
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6">
+                <p className="font-semibold">Border Countries:</p>
+                <ul className="list-disc pl-5 mt-2">
+                  {borderCountries.length > 0 ? (
+                    borderCountries.map((borderCountry, index) =>
+                      borderCountry && borderCountry.name?.common ? (
+                        <li
+                          key={index}
+                          className="cursor-pointer text-blue-600 hover:underline"
+                          onClick={() => setProduct(borderCountry)}
+                        >
+                          {borderCountry.name?.common}
+                        </li>
+                      ) : null
+                    )
                   ) : (
-                    <li>No borders found</li>
+                    <li>No border countries</li>
                   )}
                 </ul>
               </div>
             </div>
           </div>
-        </div>
-
-        {selectedBorder && (
-          <div className="mt-6 p-4 border border-gray-300 rounded-lg">
-            <h2 className="text-2xl font-semibold mb-2">
-              {selectedBorder.name.common}
-            </h2>
-            <img
-              src={selectedBorder.flags.svg}
-              alt={selectedBorder.name.common}
-              className="w-32 h-32 object-cover rounded-lg"
-            />
-            <p>
-              <strong>Region:</strong> {selectedBorder.region}
-            </p>
-            <p>
-              <strong>Capital:</strong>{" "}
-              {selectedBorder.capital?.join(", ") || "N/A"}
-            </p>
-            <p>
-              <strong>Population:</strong>{" "}
-              {selectedBorder.population.toLocaleString()}
-            </p>
-            <p>
-              <strong>Languages:</strong>{" "}
-              {Object.values(selectedBorder.languages).join(", ")}
-            </p>
+        ) : (
+          <div className="flex justify-center items-center min-h-screen">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 border-solid rounded-full animate-spin"></div>
+              <p className="mt-4 text-gray-600">Loading...</p>
+            </div>
           </div>
         )}
-
-        {/* Back Button */}
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={() => navigate("/")}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-transform transform hover:scale-105"
-          >
-            Back to Home
-          </button>
-        </div>
       </div>
     </div>
   );

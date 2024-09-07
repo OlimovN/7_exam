@@ -1,93 +1,94 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
-import useCountries from "../hooks/userCountries.js";
-import { useTheme } from "../context/ThemeContext.jsx";
-import Header from "../components/Header.jsx";
-import Loader from "../components/Loader.jsx";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/Header";
+import http from "../utils/axios.js";
 
 const HomePage = () => {
-  const { countries, loading } = useCountries();
-  const { isDarkMode } = useTheme();
+  const [card, setCard] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [region, setRegion] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
-  const filteredCountries = useMemo(() => {
-    return countries.filter((country) => {
-      return (
-        (region ? country.region === region : true) &&
-        (searchTerm
-          ? country.name.common.toLowerCase().includes(searchTerm.toLowerCase())
-          : true)
-      );
-    });
-  }, [countries, region, searchTerm]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await http.get(`/countries`);
+        console.log(response);
+        if (response && response.data && response.data.data) {
+          setCard(response.data.data);
+        } else {
+          console.log("Javob ma'lumotlari mavjud emas");
+        }
+      } catch (error) {
+        console.log("Xatolik:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredCards = useMemo(() => {
+    if (!searchQuery && !region) {
+      return card;
+    }
+    return card.filter(
+      (crds) =>
+        crds.name.common.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (region ? crds.region === region : true)
+    );
+  }, [searchQuery, region, card]);
+
+  const handleCardClick = useCallback(
+    (slug) => {
+      navigate(`/card/${slug}`);
+    },
+    [navigate]
+  );
 
   return (
-    <div
-      className={`flex flex-col min-h-screen ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
-      } transition-colors duration-300`}
-    >
-      <Header onSearch={setSearchTerm} onFilter={setRegion} />
-
-      <main className="flex-1 p-4 sm:p-6">
-        {loading ? (
-          <Loader />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
-            {filteredCountries.length ? (
-              filteredCountries.map((country) => (
-                <Link key={country.cca3} to={`/country/${country.cca3}`}>
-                  <div
-                    className={`rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 ${
-                      isDarkMode ? "bg-gray-800" : "bg-white"
-                    } overflow-hidden`}
-                  >
-                    <img
-                      src={country.flags.svg}
-                      alt={country.name.common}
-                      className="w-full h-40 object-cover rounded-t-lg transition-transform duration-300 hover:scale-110"
-                    />
-                    <div className="p-4">
-                      <h3
-                        className={`text-lg font-bold ${
-                          isDarkMode ? "text-white" : "text-gray-900"
-                        }`}
-                      >
-                        {country.name.common}
-                      </h3>
-                      <p
-                        className={`text-gray-700 ${
-                          isDarkMode ? "text-white" : "text-gray-600"
-                        }`}
-                      >
-                        <strong>Population:</strong>{" "}
-                        {country.population.toLocaleString()}
-                      </p>
-                      <p
-                        className={`text-gray-700 ${
-                          isDarkMode ? "text-white" : "text-gray-600"
-                        }`}
-                      >
-                        <strong>Region:</strong> {country.region}
-                      </p>
-                      <p
-                        className={`text-gray-700 ${
-                          isDarkMode ? "text-white" : "text-gray-600"
-                        }`}
-                      >
-                        <strong>Capital:</strong> {country.capital?.join(", ")}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <p>No countries found</p>
-            )}
-          </div>
-        )}
-      </main>
+    <div className="min-h-screen bg-gray-100">
+      <Header setSearchQuery={setSearchQuery} setRegion={setRegion} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredCards.length > 0 ? (
+            filteredCards.map((crds, index) => (
+              <div
+                onClick={() => handleCardClick(crds.name.slug)}
+                className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-300"
+                key={index}
+              >
+                <img
+                  src={crds.flags.png}
+                  alt={crds.name.common}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold mb-2">
+                    {crds.name.common}
+                  </h2>
+                  <p className="text-gray-700 mb-1">
+                    <strong>Population:</strong> <span>{crds.population}</span>
+                  </p>
+                  <p className="text-gray-700 mb-1">
+                    <strong>Region:</strong> <span>{crds.region}</span>
+                  </p>
+                  <p className="text-gray-700">
+                    <strong>Capital:</strong>{" "}
+                    <span>{crds.capital && crds.capital[0]}</span>
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center col-span-full h-48">
+              <div className="flex flex-col items-center">
+                <div className="loader"></div>
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

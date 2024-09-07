@@ -35,7 +35,7 @@ const CountrySearch = () => {
       setError("Failed to fetch countries.");
       setLoading(false);
     }
-  }, 300); // Debounce delay in milliseconds
+  }, 300); // Debounce delay in millisecondsa
 
   useEffect(() => {
     if (query.length > 0) {
