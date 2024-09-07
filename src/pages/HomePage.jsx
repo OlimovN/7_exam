@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import http from "../utils/axios.js";
+import Loader from "../components/Loader.jsx";
 
 const HomePage = () => {
   const [card, setCard] = useState([]);
@@ -81,10 +82,7 @@ const HomePage = () => {
             ))
           ) : (
             <div className="flex justify-center items-center col-span-full h-48">
-              <div className="flex flex-col items-center">
-                <div className="loader"></div>
-                <p className="mt-4 text-gray-600">Loading...</p>
-              </div>
+            <Loader></Loader>
             </div>
           )}
         </div>
