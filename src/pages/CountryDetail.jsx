@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
@@ -7,6 +7,7 @@ import ThemeToggle from "../context/ThemeToggle.jsx";
 
 const CountryDetail = () => {
   const { code } = useParams();
+  const navigate = useNavigate();
   const [country, setCountry] = useState(null);
   const [borderCountries, setBorderCountries] = useState([]);
   const [selectedBorder, setSelectedBorder] = useState(null);
@@ -174,6 +175,7 @@ const CountryDetail = () => {
             </div>
           </div>
         </div>
+
         {selectedBorder && (
           <div className="mt-6 p-4 border border-gray-300 rounded-lg">
             <h2 className="text-2xl font-semibold mb-2">
@@ -201,6 +203,16 @@ const CountryDetail = () => {
             </p>
           </div>
         )}
+
+        {/* Back Button */}
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => navigate("/")}
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-transform transform hover:scale-105"
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     </div>
   );
