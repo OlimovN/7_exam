@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import http from "../utils/axios";
 import { FaSun, FaMoon, FaArrowLeft } from "react-icons/fa";
+import Loader from "../components/Loader";
 
 const CountryDetail = () => {
   const { slug } = useParams();
@@ -25,7 +26,7 @@ const CountryDetail = () => {
           setBorderCountries(borderResponses.map((res) => res.data));
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -35,6 +36,15 @@ const CountryDetail = () => {
   const handleBack = () => navigate("/");
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
+
+  const handleBorderClick = async (borderCode) => {
+    try {
+      const response = await http.get(`countries/${borderCode}`);
+      setProduct(response.data);
+    } catch (error) {
+      console.error("Error fetching border country data:", error);
+    }
+  };
 
   return (
     <div
@@ -149,7 +159,7 @@ const CountryDetail = () => {
                         <li
                           key={index}
                           className="cursor-pointer text-blue-600 hover:underline"
-                          onClick={() => setProduct(borderCountry)}
+                          onClick={() => handleBorderClick(borderCountry.cca3)}
                         >
                           {borderCountry.name?.common}
                         </li>
@@ -164,10 +174,7 @@ const CountryDetail = () => {
           </div>
         ) : (
           <div className="flex justify-center items-center min-h-screen">
-            <div className="flex flex-col items-center">
-              <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 border-solid rounded-full animate-spin"></div>
-              <p className="mt-4 text-gray-600">Loading...</p>
-            </div>
+          <Loader></Loader>
           </div>
         )}
       </div>
