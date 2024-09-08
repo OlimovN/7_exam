@@ -3,6 +3,7 @@ import { useTheme } from "../context/ThemeContext";
 import { FaMoon, FaSun } from "react-icons/fa";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import Loader from "./Loader";
 
 const Header = ({ setSearchQuery, setRegion }) => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -133,7 +134,7 @@ const Header = ({ setSearchQuery, setRegion }) => {
           ))}
         </ul>
       )}
-      {loading && <p className="mt-2 text-gray-500">Loading...</p>}
+<Loader></Loader>
       {error && <p className="mt-2 text-red-500">{error}</p>}
     </div>
   );

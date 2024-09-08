@@ -4,7 +4,6 @@ const Loader = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulatsiya qilish uchun 2 soniya kutamiz
     const timer = setTimeout(() => {
       setLoading(false);
     }, 2000);
@@ -23,12 +22,7 @@ const Loader = () => {
     );
   }
 
-  return (
-    <div>
-      {/* Kontentingiz shu yerda bo'ladi */}
-      <h1>Content Loaded</h1>
-    </div>
-  );
-};
+  return null;
+}
 
 export default Loader;

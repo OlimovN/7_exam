@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Loader from "./Loader";
+
 
 const debounce = (func, delay) => {
   let timeoutId;
@@ -17,7 +19,6 @@ const CountrySearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Debounced function to search countries
   const searchCountries = debounce(async (searchTerm) => {
     if (searchTerm.trim() === "") {
       setResults([]);
@@ -35,7 +36,7 @@ const CountrySearch = () => {
       setError("Failed to fetch countries.");
       setLoading(false);
     }
-  }, 300); // Debounce delay in millisecondsa
+  }, 300); 
 
   useEffect(() => {
     if (query.length > 0) {
@@ -54,7 +55,7 @@ const CountrySearch = () => {
         onChange={(e) => setQuery(e.target.value)}
         className="p-2 border rounded w-full"
       />
-      {loading && <p className="mt-2 text-gray-500">Loading...</p>}
+<Loader></Loader>
       {error && <p className="mt-2 text-red-500">{error}</p>}
       {results.length > 0 && (
         <ul className="mt-2">
