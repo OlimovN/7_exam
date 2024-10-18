@@ -1,17 +1,19 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "./context/ThemeContext.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import CountryDetail from "./pages/CountryDetail.jsx";
-import "./App.css";
+import { Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import Music from "./pages/Music";
+import Like from "./pages/Like";
 
-const App = () => (
-  <ThemeProvider>
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route  path='/card/:slug' element={<CountryDetail />} />
-    </Routes>
-  </ThemeProvider>
-);
+const App = () => {
+  return (
+    <div>
+      <Routes>
+        <Route path="/" element={<Home></Home>}></Route>
+        <Route path="/music/:id" element={<Music></Music>}></Route>
+        <Route path="/like" element={<Like></Like>}></Route>
+      </Routes>
+    </div>
+  );
+};
 
 export default App;
