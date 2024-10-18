@@ -32,14 +32,14 @@ const Like = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center mx-auto max-w-7xl bg-gradient-to-b from-purple-600 to-black">
+    <div className="flex max-w-[1800px] mx-auto">
       <Heder />
       <div className="w-full p-6">
-        <nav className="flex text-white space-x-4">
-          <p className="bg-[#302761] rounded-full p-3">
+        <nav className="flex text-white space-x-4 mb-4">
+          <p className="bg-[#302761] rounded-full p-3 hover:bg-[#3b366e] transition">
             <i className="fa-solid fa-arrow-left text-lg"></i>
           </p>
-          <p className="bg-[#302761] rounded-full p-3">
+          <p className="bg-[#302761] rounded-full p-3 hover:bg-[#3b366e] transition">
             <i className="fa-solid fa-arrow-right text-lg"></i>
           </p>
         </nav>
@@ -50,10 +50,14 @@ const Like = () => {
           <p className="mt-4">{likedSongs.length} songs</p>
         </div>
 
-        <div className="mt-4 bg-gray-900 p-4 rounded-lg">
-          <div className="flex justify-between">
-            <img src={Toplam} alt="Toplam" className="w-40" />
-            <select className="bg-transparent border border-transparent text-white p-2 rounded">
+        <div className="mt-4 bg-gray-900 p-6 rounded-lg shadow-lg">
+          <div className="flex justify-between items-center">
+            <img
+              src={Toplam}
+              alt="Toplam"
+              className="w-40 rounded-lg shadow-md"
+            />
+            <select className="bg-transparent border border-gray-600 text-white p-2 rounded transition hover:border-gray-300">
               <option>Custom Order</option>
             </select>
           </div>
@@ -80,7 +84,7 @@ const Like = () => {
                 return (
                   <div
                     key={song.id}
-                    className="flex justify-between items-center bg-gray-800 p-3 rounded-lg mt-2 cursor-pointer"
+                    className="flex justify-between items-center bg-gray-800 p-4 rounded-lg mt-2 cursor-pointer hover:bg-gray-700 transition"
                     onClick={() => handleImageClick(song)}
                   >
                     <div className="flex items-center">
@@ -93,7 +97,7 @@ const Like = () => {
                           "/path/to/placeholder.jpg"
                         }
                         alt={song.name}
-                        className="w-16 h-16 rounded-lg"
+                        className="w-16 h-16 rounded-lg shadow-sm"
                       />
                       <div className="ml-4">
                         <h2 className="text-xl font-semibold text-white">
@@ -103,8 +107,11 @@ const Like = () => {
                       </div>
                     </div>
                     <h3
-                      className="text-lg cursor-pointer"
-                      onClick={() => handleLike(song)}
+                      className="text-lg cursor-pointer transition"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(song);
+                      }}
                     >
                       {isLiked ? (
                         <span className="text-green-400">❤️</span>
